@@ -1,0 +1,12 @@
+{
+  "plan_label": "",
+  "budgets": {
+    "session_tokens": null,
+    "weekly_tokens": null,
+    "model_weekly": { "model": "opus", "tokens": null }
+  },
+  "theme": "auto",
+  "panel_width": 326,
+  "left_inset": 15,
+  "padding": 3
+}

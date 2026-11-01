@@ -1,0 +1,8 @@
+# Runtime state - personal usage data, never commit
+cache.json
+config.json
+.pil-python
+collect.lock
+__pycache__/
+*.pyc
+.DS_Store
