@@ -1,8 +1,7 @@
 # Claude usage widget
 
-A macOS menu bar panel and Claude Code status line showing what you are spending
-on Claude Code — tokens by day, by model and by project, plus the live 5-hour
-block timer and burn rate.
+A macOS menu bar panel showing what you are spending on Claude Code — tokens by
+day, by model and by project, plus the live 5-hour block timer and burn rate.
 
 <p align="center">
   <img src="docs/panel.png" alt="The usage panel" width="430">
@@ -43,9 +42,8 @@ cd claude-usage-widget
 ```
 
 The installer checks dependencies, copies files to `~/.claude/usage-widget`,
-installs the SwiftBar plugin, runs a first collection, and offers to wire up the
-Claude Code status line. Nothing is written to `settings.json` unless you say yes,
-and your existing file is backed up first.
+installs the SwiftBar plugin and runs a first collection. It does not modify any
+Claude Code settings.
 
 ## Real limits
 
@@ -107,18 +105,16 @@ Two helpers apply a change and refresh SwiftBar immediately:
 
 ## How it works
 
-`ccusage` takes ~6s per invocation, far too slow to run on every menu render or
-status line redraw. So:
+`ccusage` takes ~6s per invocation, far too slow to run on every menu render. So:
 
 - **`collect.py`** runs ccusage and writes `cache.json`. `--fast` refreshes the
   active block (~5s); `--full` also refreshes daily history and projects (~17s).
 - **`panel.py`** renders the panel to a PNG — SF Pro via its variable weight axis,
   drawn at 2× and tagged 144 DPI so macOS displays it crisply at half size, on a
   transparent background so it sits in the menu as native content.
-- **The plugin and status line** read `cache.json` instantly (~0.1s) and spawn a
-  *detached* background refresh only when it is stale — block after 2 minutes,
-  history after 15. A lock file prevents multiple Claude Code sessions from
-  stampeding ccusage.
+- **The plugin** reads `cache.json` instantly (~0.1s) and spawns a *detached*
+  background refresh only when it is stale — block after 2 minutes, history
+  after 15. A lock file prevents concurrent refreshes from stampeding ccusage.
 
 Project names are recovered from ccusage's dash-encoded paths by walking the
 filesystem, so directories containing hyphens resolve correctly.

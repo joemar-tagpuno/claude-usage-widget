@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install the Claude usage widget: SwiftBar panel + Claude Code status line.
+# Install the Claude usage widget: a SwiftBar menu bar panel.
 set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -55,27 +55,6 @@ say "plugin   -> $PLUGDIR"
 # ---- first collection -------------------------------------------------------
 say "collecting usage data (about 15s)..."
 python3 "$DEST/collect.py" --full || say "collection failed; run it manually later"
-
-# ---- status line (opt-in) ---------------------------------------------------
-echo
-read -r -p "Add the Claude Code status line too? [y/N] " reply
-if [[ "${reply:-}" =~ ^[Yy]$ ]]; then
-  python3 - <<'PY'
-import json, os, time
-p = os.path.expanduser("~/.claude/settings.json")
-d = {}
-if os.path.exists(p):
-    with open(p) as f:
-        d = json.load(f)
-    os.replace(p, p + ".bak-%d" % time.time())
-d["statusLine"] = {"type": "command",
-                   "command": 'python3 "$HOME/.claude/usage-widget/statusline.py"',
-                   "padding": 0}
-with open(p, "w") as f:
-    json.dump(d, f, indent=2)
-print("  status line configured (previous settings.json backed up)")
-PY
-fi
 
 # ---- launch -----------------------------------------------------------------
 defaults write com.ameba.SwiftBar PluginDirectory -string "$PLUGDIR" 2>/dev/null || true
