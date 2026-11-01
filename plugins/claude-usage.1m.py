@@ -19,6 +19,29 @@ PANEL = os.path.join(DIR, "panel.py")
 PYHINT = os.path.join(DIR, ".pil-python")
 FAST_TTL, FULL_TTL = 120, 900
 DIMC = "#8a8a8e,#98989d"
+
+# ---------------------------------------------------------------------------
+# Menu bar label. Uncomment exactly ONE line below.
+#
+#   timer       time left in the 5-hour block        2h37
+#   icon        asterisk only, no text
+#   percent     session % of limit                   47%     (see note)
+#   weekly      weekly % of limit                    4%      (see note)
+#   tokens      tokens used today                    184M
+#   cost        today's API-equivalent spend         $49.46
+#   cost_timer  the original pairing                 $49.46 - 2h37
+#
+# Note: percent/weekly are estimates against your own 4-week norm until you
+# run calibrate.py (see "Real limits" in the README). cost/cost_timer show
+# API-equivalent pricing, which is NOT what a subscription plan bills you.
+# ---------------------------------------------------------------------------
+MENUBAR = "timer"
+# MENUBAR = "icon"
+# MENUBAR = "percent"
+# MENUBAR = "weekly"
+# MENUBAR = "tokens"
+# MENUBAR = "cost"
+# MENUBAR = "cost_timer"
 MONO = "font=Menlo size=12"
 
 
@@ -115,6 +138,43 @@ def money(v):
     return f"${v:,.0f}" if v >= 1000 else f"${v:,.2f}"
 
 
+def toks(v):
+    v = v or 0
+    for unit, div in (("B", 1e9), ("M", 1e6), ("K", 1e3)):
+        if v >= div:
+            return f"{v/div:.1f}{unit}"
+    return str(int(v))
+
+
+def block_clock(blk):
+    if not blk.get("active"):
+        return "idle"
+    rem = int(blk.get("remaining_min") or 0)
+    h, m = divmod(max(rem, 0), 60)
+    return f"{h}h{m:02d}" if h else f"{m}m"
+
+
+def menubar_label(mode, cache, py):
+    """Text shown beside the asterisk. See MENUBAR at the top of this file."""
+    blk = cache.get("block") or {}
+    today = (cache.get("history") or {}).get("today") or {}
+    if mode == "icon":
+        # A blank glyph, not an empty string: SwiftBar drops title-less items.
+        return "\u2800"
+    if mode == "timer":
+        return block_clock(blk)
+    if mode == "tokens":
+        return toks(today.get("tokens"))
+    if mode == "cost":
+        return money(today.get("cost"))
+    if mode == "cost_timer":
+        c = money(today.get("cost"))
+        return f"{c} \u00b7 {block_clock(blk)}" if blk.get("active") else c
+    if mode in ("percent", "weekly") and py:
+        return render(py, "--label", mode) or block_clock(blk)
+    return block_clock(blk)
+
+
 def main():
     tidy_swiftbar_artifacts()
     try:
@@ -130,13 +190,9 @@ def main():
 
     out = []
 
-    # ---------- menu bar: Claude asterisk + today's spend ----------
+    # ---------- menu bar: Claude asterisk + the configured label ----------
     icon = render(py, "--icon") if py else None
-    label = money(today.get("cost"))
-    if blk.get("active"):
-        rem = int(blk.get("remaining_min") or 0)
-        h, m = divmod(max(rem, 0), 60)
-        label += f" · {h}h{m:02d}" if h else f" · {m}m"
+    label = menubar_label(MENUBAR, cache, py)
     if icon:
         out.append(f"{label} | image={icon}")
     else:

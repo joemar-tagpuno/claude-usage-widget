@@ -76,6 +76,28 @@ Re-run after changing plan.
 | `padding`     | `3`     | Internal side padding (0–40)                          |
 | `budgets`     | `null`  | Set by `calibrate.py`                                 |
 
+### Menu bar label
+
+What sits beside the asterisk is a comment-toggled constant near the top of
+`plugins/claude-usage.1m.py` — uncomment exactly one:
+
+```python
+MENUBAR = "timer"        # 2h37    time left in the 5-hour block (default)
+# MENUBAR = "icon"       #         asterisk only, no text
+# MENUBAR = "percent"    # 47%     session % of limit
+# MENUBAR = "weekly"     # 4%      weekly % of limit
+# MENUBAR = "tokens"     # 184M    tokens used today
+# MENUBAR = "cost"       # $49.46  today's API-equivalent spend
+# MENUBAR = "cost_timer" # $49.46 - 2h37
+```
+
+`percent` and `weekly` are estimates until you run `calibrate.py`. `cost` and
+`cost_timer` show API-equivalent pricing, which is **not** what a subscription
+plan bills you — a dollar figure in the menu bar is the least meaningful number
+available to a subscriber, which is why the timer is the default.
+
+### Width and margins
+
 Two helpers apply a change and refresh SwiftBar immediately:
 
 ```bash

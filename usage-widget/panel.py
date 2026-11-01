@@ -374,7 +374,15 @@ def main():
     except (TypeError, ValueError):
         pass
     data = compute(cache, cfg)
-    if "--icon" in sys.argv:
+    if "--label" in sys.argv:
+        # Text for the menu bar, for modes that need compute()'s derived values.
+        mode = sys.argv[sys.argv.index("--label") + 1]
+        data = compute(cache, cfg)
+        if mode == "percent":
+            print(f"{data['limits'][0]['pct'] * 100:.0f}%")
+        elif mode == "weekly":
+            print(f"{data['limits'][1]['pct'] * 100:.0f}%")
+    elif "--icon" in sys.argv:
         print(render_icon())
     elif "--preview" in sys.argv:
         out = sys.argv[sys.argv.index("--preview") + 1]
