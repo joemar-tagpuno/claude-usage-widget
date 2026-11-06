@@ -135,8 +135,13 @@ def bar(d, x, y, w, h, frac, fill, track=None):
     r = h / 2
     d.rounded_rectangle([x, y, x + w, y + h], radius=r, fill=track)
     fw = max(0.0, min(1.0, frac)) * w
-    if fw > 0.5:
-        d.rounded_rectangle([x, y, x + max(fw, h), y + h], radius=r, fill=fill)
+    if fw <= 0.5:
+        return
+    # Pillow 10.2 raises on a rounded rectangle not wider than its height.
+    if fw <= h + 2:
+        d.ellipse([x, y, x + h, y + h], fill=fill)
+    else:
+        d.rounded_rectangle([x, y, x + fw, y + h], radius=r, fill=fill)
 
 
 def fmt_tokens(v):

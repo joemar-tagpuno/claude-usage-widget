@@ -209,8 +209,12 @@ def main():
         extra = f" width={dims[0]} height={dims[1]}" if dims else ""
         out.append(f"\u2800 | image={panel}{extra}")
     else:
-        out.append("Panel needs Pillow | color=" + DIMC)
-        out.append("Install: pip3 install Pillow | " + MONO)
+        if py:
+            out.append("Panel failed to render | color=" + DIMC)
+            out.append(f"Debug: {os.path.basename(py)} {PANEL} | " + MONO)
+        else:
+            out.append("Panel needs Pillow | color=" + DIMC)
+            out.append("Install: pip3 install Pillow | " + MONO)
         for label_, d in (("Today", today),
                           ("Week", (cache.get("history") or {}).get("week") or {}),
                           ("Month", (cache.get("history") or {}).get("month") or {})):
